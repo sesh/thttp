@@ -1,5 +1,6 @@
 import json as json_lib
 import ssl
+from urllib.error import HTTPError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 from collections import namedtuple
@@ -19,7 +20,7 @@ def request(url, params={}, json=None, data=None, headers={}, method='GET', veri
         - url (final url, after any redirects)
     """
     method = method.upper()
-    headers = {k.lower(): v for k, v in headers}  # lowecase headers
+    headers = { k.lower(): v for k, v in headers.items() }  # lowecase headers
 
     if params: url += '?' + urlencode(params)  # build URL from params
     if json and data: raise Exception('Cannot provide both json and data parameters')
@@ -35,10 +36,16 @@ def request(url, params={}, json=None, data=None, headers={}, method='GET', veri
         ctx.verify_mode = ssl.CERT_NONE
 
     req = Request(url, data=data, headers=headers, method=method)
-    with urlopen(req, context=ctx) as resp:
-        status, content, resp_url = (resp.getcode(), resp.read(), resp.geturl())
-        headers = {k.lower(): v for k, v in list(resp.info().items())}
-        json = json_lib.loads(content) if headers['content-type'] == 'application/json' else None
+
+    try:
+        with urlopen(req, context=ctx) as resp:
+            status, content, resp_url = (resp.getcode(), resp.read(), resp.geturl())
+            headers = {k.lower(): v for k, v in list(resp.info().items())}
+            json = json_lib.loads(content) if 'application/json' in headers.get('content-type', '').lower() else None
+    except HTTPError as e:
+        status, content, resp_url = (e.code, e.read(), e.geturl())
+        headers = {k.lower(): v for k, v in list(e.headers.items())}
+        json = json_lib.loads(content) if 'application/json' in headers.get('content-type', '').lower() else None
 
     return Response(req, content, json, status, resp_url, headers)
 
