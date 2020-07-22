@@ -1,15 +1,15 @@
-# tiny-request
+# thttp
 
 An incredibly lightweight wrapper around urllib.
 
 I can't remember _why_ I originally wrote this, but I think it may have been to use in an AWS Lambda.
 
-Putting it here because I might have another play with this idea in the future.
+I keep pulling it into projects, so it's seen a couple of updates over the last few years.
 
 ## Running the tests
 
 ```sh
-> python3 -m unittest tiny_request.py
+> python3 -m unittest thttp.py
 ```
 
 ## Basic Usage
@@ -17,7 +17,7 @@ Putting it here because I might have another play with this idea in the future.
 See the tests for examples of usage, but, effectively it's as simple as:
 
 ```python
-from tiny_request import request
+from thttp import request
 
 response = request('https://httpbin.org/get', params={'library': 'tiny-request'})
 print(response._fields)
