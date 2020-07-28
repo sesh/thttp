@@ -84,3 +84,8 @@ class RequestTestCase(unittest.TestCase):
     def test_should_populate_json(self):
         response = request('https://httpbin.org/json')
         self.assertTrue('slideshow' in response.json)
+
+    def test_should_return_response_for_404(self):
+        response = request('https://httpbin.org/404')
+        self.assertEqual(response.status, 404)
+        self.assertEqual(response.headers['content-type'], 'text/html')
