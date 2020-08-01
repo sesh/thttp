@@ -1,6 +1,6 @@
 import json as json_lib
 import ssl
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 from collections import namedtuple
@@ -89,3 +89,11 @@ class RequestTestCase(unittest.TestCase):
         response = request('https://httpbin.org/404')
         self.assertEqual(response.status, 404)
         self.assertEqual(response.headers['content-type'], 'text/html')
+
+    def test_should_fail_with_bad_ssl(self):
+        with self.assertRaises(URLError):
+            response = request('https://expired.badssl.com/')
+
+    def test_should_load_bad_ssl_with_verify_false(self):
+        response = request('https://expired.badssl.com/', verify=False)
+        self.assertEqual(response.status, 200)
