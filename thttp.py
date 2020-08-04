@@ -29,6 +29,8 @@ def request(url, params={}, json=None, data=None, headers={}, method='GET', veri
     if json:  # if we have json, stringify and put it in our data variable
         headers['content-type'] = 'application/json'
         data = json_lib.dumps(json).encode('utf-8')
+    elif data:
+        data = urlencode(data).encode()
 
     ctx = ssl.create_default_context()
     if not verify:  # ignore ssl errors
@@ -97,3 +99,7 @@ class RequestTestCase(unittest.TestCase):
     def test_should_load_bad_ssl_with_verify_false(self):
         response = request('https://expired.badssl.com/', verify=False)
         self.assertEqual(response.status, 200)
+
+    def test_should_form_encode_non_json_post_requests(self):
+        response = request('https://httpbin.org/post', data={'name': 'test-user'}, method='POST')
+        self.assertEqual(response.json['form']['name'], 'test-user')
