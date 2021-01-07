@@ -2,13 +2,20 @@ import json as json_lib
 import ssl
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
-from urllib.request import Request, urlopen
+from urllib.request import Request, urlopen, build_opener, HTTPRedirectHandler, HTTPSHandler, HTTPCookieProcessor
 from collections import namedtuple
+from http.cookiejar import CookieJar
 
 
-Response = namedtuple('Response', 'request content json status url headers')
+Response = namedtuple('Response', 'request content json status url headers cookiejar')
 
-def request(url, params={}, json=None, data=None, headers={}, method='GET', verify=True):
+
+class NoRedirect(HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+def request(url, params={}, json=None, data=None, headers={}, method='GET', verify=True, redirect=True, cookiejar=None):
     """
     Returns a (named)tuple with the following properties:
         - request
@@ -18,6 +25,7 @@ def request(url, params={}, json=None, data=None, headers={}, method='GET', veri
             - https://stackoverflow.com/questions/5258977/are-http-headers-case-sensitive
         - status
         - url (final url, after any redirects)
+        - cookiejar
     """
     method = method.upper()
     headers = { k.lower(): v for k, v in headers.items() }  # lowecase headers
@@ -37,10 +45,18 @@ def request(url, params={}, json=None, data=None, headers={}, method='GET', veri
         ctx.check_hostname = False
         ctx.verify_mode = ssl.CERT_NONE
 
+    handlers = []
+    handlers.append(HTTPSHandler(context=ctx))
+
+    if not redirect:
+        no_redirect = NoRedirect()
+        handlers.append(no_redirect)
+
+    opener = build_opener(*handlers)
     req = Request(url, data=data, headers=headers, method=method)
 
     try:
-        with urlopen(req, context=ctx) as resp:
+        with opener.open(req) as resp:
             status, content, resp_url = (resp.getcode(), resp.read(), resp.geturl())
             headers = {k.lower(): v for k, v in list(resp.info().items())}
             json = json_lib.loads(content) if 'application/json' in headers.get('content-type', '').lower() else None
@@ -49,7 +65,7 @@ def request(url, params={}, json=None, data=None, headers={}, method='GET', veri
         headers = {k.lower(): v for k, v in list(e.headers.items())}
         json = json_lib.loads(content) if 'application/json' in headers.get('content-type', '').lower() else None
 
-    return Response(req, content, json, status, resp_url, headers)
+    return Response(req, content, json, status, resp_url, headers, cookiejar)
 
 
 import unittest
@@ -58,39 +74,39 @@ class RequestTestCase(unittest.TestCase):
 
     def test_cannot_provide_json_and_data(self):
         with self.assertRaises(Exception):
-            request('https://httpbin.org/post', json={'name': 'Brenton'}, data="This is some form data")
+            request('https://httpbingo.org/post', json={'name': 'Brenton'}, data="This is some form data")
 
     def test_should_fail_if_json_or_data_and_not_p_method(self):
         with self.assertRaises(Exception):
-            request('https://httpbin.org/post', json={'name': 'Brenton'})
+            request('https://httpbingo.org/post', json={'name': 'Brenton'})
 
         with self.assertRaises(Exception):
-            request('https://httpbin.org/post', json={'name': 'Brenton'}, method='HEAD')
+            request('https://httpbingo.org/post', json={'name': 'Brenton'}, method='HEAD')
 
     def test_should_set_content_type_for_json_request(self):
-        response = request('https://httpbin.org/post', json={'name': 'Brenton'}, method='POST')
+        response = request('https://httpbingo.org/post', json={'name': 'Brenton'}, method='POST')
         self.assertEqual(response.request.headers['Content-type'], 'application/json')
 
     def test_should_work(self):
-        response = request('https://httpbin.org/get')
+        response = request('https://httpbingo.org/get')
         self.assertEqual(response.status, 200)
 
     def test_should_create_url_from_params(self):
-        response = request('https://httpbin.org/get', params={'name': 'brenton', 'library': 'tiny-request'})
-        self.assertEqual(response.url, 'https://httpbin.org/get?name=brenton&library=tiny-request')
+        response = request('https://httpbingo.org/get', params={'name': 'brenton', 'library': 'tiny-request'})
+        self.assertEqual(response.url, 'https://httpbingo.org/get?name=brenton&library=tiny-request')
 
     def test_should_return_headers(self):
-        response = request('https://httpbin.org/response-headers', params={'Test-Header': 'value'})
+        response = request('https://httpbingo.org/response-headers', params={'Test-Header': 'value'})
         self.assertEqual(response.headers['test-header'], 'value')
 
     def test_should_populate_json(self):
-        response = request('https://httpbin.org/json')
+        response = request('https://httpbingo.org/json')
         self.assertTrue('slideshow' in response.json)
 
     def test_should_return_response_for_404(self):
-        response = request('https://httpbin.org/404')
+        response = request('https://httpbingo.org/404')
         self.assertEqual(response.status, 404)
-        self.assertEqual(response.headers['content-type'], 'text/html')
+        self.assertTrue('text/plain' in response.headers['content-type'])
 
     def test_should_fail_with_bad_ssl(self):
         with self.assertRaises(URLError):
@@ -101,5 +117,14 @@ class RequestTestCase(unittest.TestCase):
         self.assertEqual(response.status, 200)
 
     def test_should_form_encode_non_json_post_requests(self):
-        response = request('https://httpbin.org/post', data={'name': 'test-user'}, method='POST')
-        self.assertEqual(response.json['form']['name'], 'test-user')
+        response = request('https://httpbingo.org/post', data={'name': 'test-user'}, method='POST')
+        self.assertEqual(response.json['form']['name'], ['test-user'])
+
+    def test_should_follow_redirect(self):
+        response = request('https://httpbingo.org/redirect-to', params={'url': 'https://duckduckgo.com/'})
+        self.assertEqual(response.url, 'https://duckduckgo.com/')
+        self.assertEqual(response.status, 200)
+
+    def test_should_not_follow_redirect_if_redirect_false(self):
+        response = request('https://httpbingo.org/redirect-to', params={'url': 'https://duckduckgo.com/'}, redirect=False)
+        self.assertEqual(response.status, 302)

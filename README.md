@@ -12,6 +12,13 @@ I keep pulling it into projects, so it's seen a couple of updates over the last 
 > python3 -m unittest thttp.py
 ```
 
+And to check the coverage:
+
+```sh
+> coverage run -m unittest thttp.py
+> coverage html && open htmlcov/index.html
+```
+
 ## Basic Usage
 
 See the tests for examples of usage, but, effectively it's as simple as:
