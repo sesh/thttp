@@ -40,6 +40,9 @@ def request(url, params={}, json=None, data=None, headers={}, method='GET', veri
     elif data:
         data = urlencode(data).encode()
 
+    if not cookiejar:
+        cookiejar = CookieJar()
+
     ctx = ssl.create_default_context()
     if not verify:  # ignore ssl errors
         ctx.check_hostname = False
@@ -47,6 +50,7 @@ def request(url, params={}, json=None, data=None, headers={}, method='GET', veri
 
     handlers = []
     handlers.append(HTTPSHandler(context=ctx))
+    handlers.append(HTTPCookieProcessor(cookiejar=cookiejar))
 
     if not redirect:
         no_redirect = NoRedirect()
@@ -128,3 +132,8 @@ class RequestTestCase(unittest.TestCase):
     def test_should_not_follow_redirect_if_redirect_false(self):
         response = request('https://httpbingo.org/redirect-to', params={'url': 'https://duckduckgo.com/'}, redirect=False)
         self.assertEqual(response.status, 302)
+
+    def test_cookies(self):
+        response = request('https://httpbingo.org/cookies/set', params={'cookie': 'test'}, redirect=False)
+        response = request('https://httpbingo.org/cookies', cookiejar=response.cookiejar)
+        self.assertEqual(response.json['cookie'], 'test')
