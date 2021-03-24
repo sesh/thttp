@@ -1,10 +1,13 @@
-import json as json_lib
 import ssl
+import json as json_lib
+
+from base64 import b64encode
+from collections import namedtuple
+
+from http.cookiejar import CookieJar
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
-from urllib.request import Request, urlopen, build_opener, HTTPRedirectHandler, HTTPSHandler, HTTPCookieProcessor
-from collections import namedtuple
-from http.cookiejar import CookieJar
+from urllib.request import Request, build_opener, HTTPRedirectHandler, HTTPSHandler, HTTPCookieProcessor
 
 
 Response = namedtuple('Response', 'request content json status url headers cookiejar')
@@ -15,7 +18,7 @@ class NoRedirect(HTTPRedirectHandler):
         return None
 
 
-def request(url, params={}, json=None, data=None, headers={}, method='GET', verify=True, redirect=True, cookiejar=None):
+def request(url, params={}, json=None, data=None, headers={}, method='GET', verify=True, redirect=True, cookiejar=None, basic_auth=None):
     """
     Returns a (named)tuple with the following properties:
         - request
@@ -39,6 +42,10 @@ def request(url, params={}, json=None, data=None, headers={}, method='GET', veri
         data = json_lib.dumps(json).encode('utf-8')
     elif data:
         data = urlencode(data).encode()
+
+    if basic_auth and len(basic_auth) == 2 and 'authorization' not in headers:
+        username, password = basic_auth
+        headers['authorization'] = f'Basic {b64encode(f"{username}:{password}".encode()).decode("ascii")}'
 
     if not cookiejar:
         cookiejar = CookieJar()
@@ -137,3 +144,7 @@ class RequestTestCase(unittest.TestCase):
         response = request('https://httpbingo.org/cookies/set', params={'cookie': 'test'}, redirect=False)
         response = request('https://httpbingo.org/cookies', cookiejar=response.cookiejar)
         self.assertEqual(response.json['cookie'], 'test')
+
+    def test_basic_auth(self):
+        response = request('http://httpbingo.org/basic-auth/user/passwd', basic_auth=('user', 'passwd'))
+        self.assertEqual(response.json['authorized'], True)
