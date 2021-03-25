@@ -1,3 +1,4 @@
+import gzip
 import ssl
 import json as json_lib
 
@@ -70,10 +71,18 @@ def request(url, params={}, json=None, data=None, headers={}, method='GET', veri
         with opener.open(req) as resp:
             status, content, resp_url = (resp.getcode(), resp.read(), resp.geturl())
             headers = {k.lower(): v for k, v in list(resp.info().items())}
+
+            if 'gzip' in headers.get('content-encoding', ''):
+                content = gzip.decompress(content)
+
             json = json_lib.loads(content) if 'application/json' in headers.get('content-type', '').lower() else None
     except HTTPError as e:
         status, content, resp_url = (e.code, e.read(), e.geturl())
         headers = {k.lower(): v for k, v in list(e.headers.items())}
+
+        if 'gzip' in headers.get('content-encoding', ''):
+            content = gzip.decompress(content)
+
         json = json_lib.loads(content) if 'application/json' in headers.get('content-type', '').lower() else None
 
     return Response(req, content, json, status, resp_url, headers, cookiejar)
@@ -148,3 +157,7 @@ class RequestTestCase(unittest.TestCase):
     def test_basic_auth(self):
         response = request('http://httpbingo.org/basic-auth/user/passwd', basic_auth=('user', 'passwd'))
         self.assertEqual(response.json['authorized'], True)
+
+    def test_should_handle_gzip(self):
+        response = request('http://httpbingo.org/gzip')
+        self.assertEqual(response.json['gzipped'], True)
