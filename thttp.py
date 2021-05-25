@@ -1,3 +1,10 @@
+"""
+UNLICENSED
+This is free and unencumbered software released into the public domain.
+
+https://github.com/sesh/thttp
+"""
+
 import gzip
 import ssl
 import json as json_lib
