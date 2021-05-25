@@ -1,8 +1,8 @@
 # thttp
 
-An incredibly lightweight wrapper around urllib.
+A lightweight wrapper around urllib for Python 3.
 
-I can't remember _why_ I originally wrote this, but I think it may have been to use in an AWS Lambda.
+I can't remember _why_ I originally wrote this, but I think it may have been to use in an AWS Lambda where I didn't want to add [requests](https://github.com/psf/requests) as a dependency.
 
 I keep pulling it into projects, so it's seen a couple of updates over the last few years.
 
