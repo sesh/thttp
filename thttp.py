@@ -166,5 +166,5 @@ class RequestTestCase(unittest.TestCase):
         self.assertEqual(response.json['authorized'], True)
 
     def test_should_handle_gzip(self):
-        response = request('http://httpbingo.org/gzip')
+        response = request('http://httpbingo.org/gzip', headers={"Accept-Encoding": "gzip"})
         self.assertEqual(response.json['gzipped'], True)
