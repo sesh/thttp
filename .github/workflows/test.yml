@@ -46,5 +46,6 @@ jobs:
     - name: Run coverage
       run: |
         python -m coverage run -m unittest thttp.py
+        coverage report
         coverage json
         jq '.totals.percent_covered' coverage.json
