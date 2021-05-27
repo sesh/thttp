@@ -48,4 +48,5 @@ jobs:
         python -m coverage run -m unittest thttp.py
         coverage report -m
         coverage json
-        http post https://delta-v.club/delta/c305f29f-9712-41ee-bd76-e787ca9f0acc/track value=${jq '.totals.percent_covered' coverage.json}
+        jq '.totals.percent_covered' coverage.json > coverage.txt
+        http post https://delta-v.club/delta/c305f29f-9712-41ee-bd76-e787ca9f0acc/track value=${cat coverage.txt}
