@@ -26,7 +26,7 @@ class NoRedirect(HTTPRedirectHandler):
         return None
 
 
-def request(url, params={}, json=None, data=None, headers={}, method='GET', verify=True, redirect=True, cookiejar=None, basic_auth=None):
+def request(url, params={}, json=None, data=None, headers={}, method='GET', verify=True, redirect=True, cookiejar=None, basic_auth=None, timeout=None):
     """
     Returns a (named)tuple with the following properties:
         - request
@@ -44,6 +44,7 @@ def request(url, params={}, json=None, data=None, headers={}, method='GET', veri
     if params: url += '?' + urlencode(params)  # build URL from params
     if json and data: raise Exception('Cannot provide both json and data parameters')
     if method not in ['POST', 'PATCH', 'PUT'] and (json or data): raise Exception('Request method must POST, PATCH or PUT if json or data is provided')
+    if not timeout: timeout = 60
 
     if json:  # if we have json, stringify and put it in our data variable
         headers['content-type'] = 'application/json'
@@ -75,7 +76,7 @@ def request(url, params={}, json=None, data=None, headers={}, method='GET', veri
     req = Request(url, data=data, headers=headers, method=method)
 
     try:
-        with opener.open(req) as resp:
+        with opener.open(req, timeout=timeout) as resp:
             status, content, resp_url = (resp.getcode(), resp.read(), resp.geturl())
             headers = {k.lower(): v for k, v in list(resp.info().items())}
 
@@ -168,3 +169,7 @@ class RequestTestCase(unittest.TestCase):
     def test_should_handle_gzip(self):
         response = request('http://httpbingo.org/gzip', headers={"Accept-Encoding": "gzip"})
         self.assertEqual(response.json['gzipped'], True)
+
+    def test_should_timeout(self):
+        with self.assertRaises(TimeoutError):
+            response = request('http://httpbingo.org/delay/3', timeout=1)
