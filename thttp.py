@@ -240,7 +240,8 @@ class RequestTestCase(unittest.TestCase):
         self.assertEqual(response.json["gzipped"], True)
 
     def test_should_timeout(self):
-        with self.assertRaises(TimeoutError):
+        import socket
+        with self.assertRaises((TimeoutError, socket.timeout)):
             response = request("http://httpbingo.org/delay/3", timeout=1)
 
     def test_should_handle_head_requests(self):
