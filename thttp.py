@@ -239,8 +239,15 @@ class RequestTestCase(unittest.TestCase):
         )
         self.assertEqual(response.json["gzipped"], True)
 
+    def test_should_handle_gzip_error(self):
+        response = request(
+            "http://httpbingo.org/status/418", headers={"Accept-Encoding": "gzip"}
+        )
+        self.assertEqual(response.content, b"I'm a teapot!")
+
     def test_should_timeout(self):
         import socket
+
         with self.assertRaises((TimeoutError, socket.timeout)):
             response = request("http://httpbingo.org/delay/3", timeout=1)
 

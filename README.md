@@ -1,23 +1,39 @@
 # thttp
 
-A lightweight wrapper around urllib for Python 3.
+`thttp` is a single file, lightweight, well-tested wrapper around urllib that's intended to be copied directly into your project.
 
-I can't remember _why_ I originally wrote this, but I think it may have been to use in an AWS Lambda where I didn't want to add [requests](https://github.com/psf/requests) as a dependency.
+Features:
 
-I keep pulling it into projects, so it's seen a couple of updates over the last few years.
+- Making GET, POST, PATCH, PUT, HEAD and OPTIONS requests
+- Sending query parameters with your request
+- Encoding JSON payloads for POST, PATCH and PUT requests
+- Enconding form-encoded payloads for POST, PATCH and PUT request
+- Sending custom headers with any request
+- Disabling SSL certificate verification for local testing / corporate proxies
+- Following (or not following) redirects
+- Sending through a CookieJar object that can be reused between requests
+- HTTP basic auth
+- Specifying a custom timeout for your request
+- Decompressing gzipped content in the response
+- Loading JSON from the response
+- Returning error responses instead of throwing exceptions from urllib
 
-## Running the tests
+Future features:
 
-```sh
-> python3 -m unittest thttp.py
+- Better detection of JSON responses
+- `pretty()` function for printing responses
+- Improve handling of non-utf-8 requests
+- Improve handling of non-utf-8 responses
+
+_Note: this project is not intended to solve all use cases that can be achieved with urllib, requests or other HTTP libraries. The intent is to provide a lighweight tool that simplifies some of the most common use cases for developers._
+
+
+## Installation
+
+```
+curl https://raw.githubusercontent.com/sesh/thttp/main/thttp.py > thttp.py
 ```
 
-And to check the coverage:
-
-```sh
-> coverage run -m unittest thttp.py
-> coverage html && open htmlcov/index.html
-```
 
 ## Basic Usage
 
@@ -33,4 +49,24 @@ print(response.json)
 
 print(response._fields)
 #('request', 'content', 'json', 'status', 'url', 'headers', 'cookiejar')
+```
+
+
+## Running the tests
+
+```sh
+> python3 -m unittest thttp.py
+```
+
+And to check the coverage:
+
+```sh
+> coverage run -m unittest thttp.py
+> coverage html && open htmlcov/index.html
+```
+
+Run `black` before committing any changes.
+
+```sh
+> black thttp.py
 ```
