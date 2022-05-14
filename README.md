@@ -25,21 +25,21 @@ Future features:
 - Improve handling of non-utf-8 requests
 - Improve handling of non-utf-8 responses
 
-_Note: this project is not intended to solve all use cases that can be achieved with urllib, requests or other HTTP libraries. The intent is to provide a lighweight tool that simplifies some of the most common use cases for developers._
+_Note: this project is not intended to solve all use cases that can be achieved with urllib, requests or other HTTP libraries. The intent is to provide a lightweight tool that simplifies some of the most common use cases for developers._
 
 
 ## Installation
 
-Install with `pip`:
-
-```
-python3 -m pip install thttp
-```
-
-Or, copy `thttp.py` directly into your project:
+copy `thttp.py` directly into your project:
 
 ```
 curl https://raw.githubusercontent.com/sesh/thttp/main/thttp.py > thttp.py
+```
+
+Or, install with `pip`:
+
+```
+python3 -m pip install thttp
 ```
 
 
@@ -52,11 +52,11 @@ from thttp import request
 
 response = request("https://httpbingo.org/get", params={"data": "empty"})
 
-print(response.json)
+response.json
 # {'args': {'data': ['empty']}, 'headers': {'Accept-Encoding': ['identity'], 'Fly-Client-Ip': ['45.76.105.111'], 'Fly-Forwarded-Port': ['443'], 'Fly-Forwarded-Proto': ['https'], 'Fly-Forwarded-Ssl': ['on'], 'Fly-Region': ['hkg'], 'Fly-Request-Id': ['01F6P2WQAY1NGPRDCXV9H60XW5'], 'Host': ['httpbingo.org'], 'User-Agent': ['Python-urllib/3.8'], 'Via': ['1.1 fly.io'], 'X-Forwarded-For': ['45.76.105.111, 77.83.142.42'], 'X-Forwarded-Port': ['443'], 'X-Forwarded-Proto': ['https'], 'X-Forwarded-Ssl': ['on'], 'X-Request-Start': ['t=1622091390302198']}, 'origin': '45.76.105.111, 77.83.142.42', 'url': 'https://httpbingo.org/get?data=empty'}
 
-print(response._fields)
-#('request', 'content', 'json', 'status', 'url', 'headers', 'cookiejar')
+response.status
+# 200
 ```
 
 
