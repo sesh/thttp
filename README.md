@@ -30,6 +30,14 @@ _Note: this project is not intended to solve all use cases that can be achieved 
 
 ## Installation
 
+Install with `pip`:
+
+```
+python3 -m pip install thttp
+```
+
+Or, copy `thttp.py` directly into your project:
+
 ```
 curl https://raw.githubusercontent.com/sesh/thttp/main/thttp.py > thttp.py
 ```
@@ -69,4 +77,11 @@ Run `black` before committing any changes.
 
 ```sh
 > black thttp.py
+```
+
+## Packaging for release
+
+```
+python3 -m build
+python3 -m twine upload dist/*
 ```
