@@ -1,22 +1,22 @@
 # thttp
 
-`thttp` is a single file, lightweight, well-tested wrapper around urllib that's intended to be copied directly into your project.
+`thttp` is a single file, lightweight, well-tested wrapper around `urllib` that's intended to be copied directly into your project.
 
-Features:
+It's features include:
 
 - Making GET, POST, PATCH, PUT, HEAD and OPTIONS requests
 - Sending query parameters with your request
 - Encoding JSON payloads for POST, PATCH and PUT requests
-- Enconding form-encoded payloads for POST, PATCH and PUT request
+- Encoding form-encoded payloads for POST, PATCH and PUT request
 - Sending custom headers with any request
 - Disabling SSL certificate verification for local testing / corporate proxies
 - Following (or not following) redirects
 - Sending through a CookieJar object that can be reused between requests
-- HTTP basic auth
+- Authenticating with HTTP basic auth
 - Specifying a custom timeout for your request
 - Decompressing gzipped content in the response
 - Loading JSON from the response
-- Returning error responses instead of throwing exceptions from urllib
+- Returning error responses instead of throwing exceptions from `urllib`
 
 Future features:
 
@@ -78,6 +78,7 @@ Run `black` before committing any changes.
 ```sh
 > black thttp.py
 ```
+
 
 ## Packaging for release
 
