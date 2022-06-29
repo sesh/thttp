@@ -57,20 +57,23 @@ def request(
         - cookiejar
     """
     method = method.upper()
-    headers = {k.lower(): v for k, v in headers.items()}  # lowecase headers
+    headers = {k.lower(): v for k, v in headers.items()}  # lowercase headers
 
     if params:
-        url += "?" + urlencode(params)  # build URL from params
+        url += "?" + urlencode(params)  # build URL from query parameters
+
     if json and data:
         raise Exception("Cannot provide both json and data parameters")
+
     if method not in ["POST", "PATCH", "PUT"] and (json or data):
         raise Exception(
             "Request method must POST, PATCH or PUT if json or data is provided"
         )
+
     if not timeout:
         timeout = 60
 
-    if json:  # if we have json, stringify and put it in our data variable
+    if json:  # if we have json, dump it to a string and put it in our data variable
         headers["content-type"] = "application/json"
         data = json_lib.dumps(json).encode("utf-8")
     elif data:
