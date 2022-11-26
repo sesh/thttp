@@ -76,8 +76,10 @@ def request(
     if json:  # if we have json, dump it to a string and put it in our data variable
         headers["content-type"] = "application/json"
         data = json_lib.dumps(json).encode("utf-8")
-    elif data:
+    elif data and not isinstance(data, (str, bytes)):
         data = urlencode(data).encode()
+    elif isinstance(data, str):
+        data = data.encode()
 
     if basic_auth and len(basic_auth) == 2 and "authorization" not in headers:
         username, password = basic_auth
@@ -206,15 +208,15 @@ class RequestTestCase(unittest.TestCase):
     def test_should_follow_redirect(self):
         response = request(
             "https://httpbingo.org/redirect-to",
-            params={"url": "https://duckduckgo.com/"},
+            params={"url": "https://example.org/"},
         )
-        self.assertEqual(response.url, "https://duckduckgo.com/")
+        self.assertEqual(response.url, "https://example.org/")
         self.assertEqual(response.status, 200)
 
     def test_should_not_follow_redirect_if_redirect_false(self):
         response = request(
             "https://httpbingo.org/redirect-to",
-            params={"url": "https://duckduckgo.com/"},
+            params={"url": "https://example.org/"},
             redirect=False,
         )
         self.assertEqual(response.status, 302)
@@ -257,3 +259,11 @@ class RequestTestCase(unittest.TestCase):
     def test_should_handle_head_requests(self):
         response = request("http://httpbingo.org/head", method="HEAD")
         self.assertTrue(response.content == b"")
+
+    def test_should_post_data_string(self):
+        response = request(
+            "https://ntfy.sh/thttp-test-ntfy",
+            data="The thttp test suite was executed!",
+            method="POST",
+        )
+        self.assertTrue(response.json["topic"] == "thttp-test-ntfy")
