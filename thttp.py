@@ -136,7 +136,7 @@ def request(
     return Response(req, content, json, status, resp_url, headers, cookiejar)
 
 
-import unittest
+import unittest  # noqa: E402
 
 
 class RequestTestCase(unittest.TestCase):
@@ -193,7 +193,7 @@ class RequestTestCase(unittest.TestCase):
 
     def test_should_fail_with_bad_ssl(self):
         with self.assertRaises(URLError):
-            response = request("https://expired.badssl.com/")
+            request("https://expired.badssl.com/")
 
     def test_should_load_bad_ssl_with_verify_false(self):
         response = request("https://expired.badssl.com/", verify=False)
@@ -254,7 +254,7 @@ class RequestTestCase(unittest.TestCase):
         import socket
 
         with self.assertRaises((TimeoutError, socket.timeout)):
-            response = request("http://httpbingo.org/delay/3", timeout=1)
+            request("http://httpbingo.org/delay/3", timeout=1)
 
     def test_should_handle_head_requests(self):
         response = request("http://httpbingo.org/head", method="HEAD")
