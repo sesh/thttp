@@ -12,6 +12,7 @@ import json as json_lib
 from base64 import b64encode
 from collections import namedtuple
 
+from http import HTTPStatus
 from http.cookiejar import CookieJar
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
@@ -136,7 +137,40 @@ def request(
     return Response(req, content, json, status, resp_url, headers, cookiejar)
 
 
+def pretty(response, headers_only=False):
+    RESET = "\033[0m"
+    HIGHLIGHT = "\033[34m"
+    HTTP_STATUSES = {x.value: x.name for x in HTTPStatus}
+
+    # status code
+    print(
+        HIGHLIGHT
+        + str(response.status)
+        + " "
+        + RESET
+        + HTTP_STATUSES.get(response.status, "")
+    )
+
+    # headers
+    for k in sorted(response.headers.keys()):
+        print(HIGHLIGHT + k + RESET + ": " + response.headers[k])
+
+    if headers_only:
+        return
+
+    # blank line
+    print()
+
+    # response body
+    if response.json:
+        print(json_lib.dumps(response.json, indent=2))
+    else:
+        print(response.content.decode())
+
+
 import unittest  # noqa: E402
+import contextlib  # noqa: E402
+from io import StringIO  # noqa: E402
 
 
 class RequestTestCase(unittest.TestCase):
@@ -267,3 +301,29 @@ class RequestTestCase(unittest.TestCase):
             method="POST",
         )
         self.assertTrue(response.json["topic"] == "thttp-test-ntfy")
+
+    def test_pretty_output(self):
+        response = request("https://basehtml.xyz")
+
+        f = StringIO()
+        with contextlib.redirect_stdout(f):
+            pretty(response)
+
+        f.seek(0)
+        output = f.read()
+
+        self.assertTrue("text/html; charset=utf-8" in output)
+        self.assertTrue("<h1>base.html</h1>" in output)
+
+    def test_pretty_output_headers_only(self):
+        response = request("https://basehtml.xyz")
+
+        f = StringIO()
+        with contextlib.redirect_stdout(f):
+            pretty(response, headers_only=True)
+
+        f.seek(0)
+        output = f.read()
+
+        self.assertTrue("text/html; charset=utf-8" in output)
+        self.assertTrue("<h1>base.html</h1>" not in output)
