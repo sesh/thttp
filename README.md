@@ -17,11 +17,11 @@ It's features include:
 - Decompressing gzipped content in the response
 - Loading JSON from the response
 - Returning error responses instead of throwing exceptions from `urllib`
+- `pretty()` function for printing responses
 
 Future features:
 
 - Better detection of JSON responses
-- `pretty()` function for printing responses
 - Improve handling of non-utf-8 requests
 - Improve handling of non-utf-8 responses
 
