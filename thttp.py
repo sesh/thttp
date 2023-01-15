@@ -6,24 +6,21 @@ https://github.com/sesh/thttp
 """
 
 import gzip
-import ssl
 import json as json_lib
-
+import ssl
 from base64 import b64encode
 from collections import namedtuple
-
 from http import HTTPStatus
 from http.cookiejar import CookieJar
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import (
-    Request,
-    build_opener,
+    HTTPCookieProcessor,
     HTTPRedirectHandler,
     HTTPSHandler,
-    HTTPCookieProcessor,
+    Request,
+    build_opener,
 )
-
 
 Response = namedtuple("Response", "request content json status url headers cookiejar")
 
@@ -168,8 +165,8 @@ def pretty(response, headers_only=False):
         print(response.content.decode())
 
 
-import unittest  # noqa: E402
 import contextlib  # noqa: E402
+import unittest  # noqa: E402
 from io import StringIO  # noqa: E402
 
 
