@@ -64,9 +64,7 @@ def request(
         raise Exception("Cannot provide both json and data parameters")
 
     if method not in ["POST", "PATCH", "PUT"] and (json or data):
-        raise Exception(
-            "Request method must POST, PATCH or PUT if json or data is provided"
-        )
+        raise Exception("Request method must POST, PATCH or PUT if json or data is provided")
 
     if not timeout:
         timeout = 60
@@ -81,9 +79,7 @@ def request(
 
     if basic_auth and len(basic_auth) == 2 and "authorization" not in headers:
         username, password = basic_auth
-        headers[
-            "authorization"
-        ] = f'Basic {b64encode(f"{username}:{password}".encode()).decode("ascii")}'
+        headers["authorization"] = f'Basic {b64encode(f"{username}:{password}".encode()).decode("ascii")}'
 
     if not cookiejar:
         cookiejar = CookieJar()
@@ -114,8 +110,7 @@ def request(
 
             json = (
                 json_lib.loads(content)
-                if "application/json" in headers.get("content-type", "").lower()
-                and content
+                if "application/json" in headers.get("content-type", "").lower() and content
                 else None
             )
     except HTTPError as e:
@@ -140,13 +135,7 @@ def pretty(response, headers_only=False):
     HTTP_STATUSES = {x.value: x.name for x in HTTPStatus}
 
     # status code
-    print(
-        HIGHLIGHT
-        + str(response.status)
-        + " "
-        + RESET
-        + HTTP_STATUSES.get(response.status, "")
-    )
+    print(HIGHLIGHT + str(response.status) + " " + RESET + HTTP_STATUSES.get(response.status, ""))
 
     # headers
     for k in sorted(response.headers.keys()):
@@ -184,14 +173,10 @@ class RequestTestCase(unittest.TestCase):
             request("https://httpbingo.org/post", json={"name": "Brenton"})
 
         with self.assertRaises(Exception):
-            request(
-                "https://httpbingo.org/post", json={"name": "Brenton"}, method="HEAD"
-            )
+            request("https://httpbingo.org/post", json={"name": "Brenton"}, method="HEAD")
 
     def test_should_set_content_type_for_json_request(self):
-        response = request(
-            "https://httpbingo.org/post", json={"name": "Brenton"}, method="POST"
-        )
+        response = request("https://httpbingo.org/post", json={"name": "Brenton"}, method="POST")
         self.assertEqual(response.request.headers["Content-type"], "application/json")
 
     def test_should_work(self):
@@ -203,14 +188,10 @@ class RequestTestCase(unittest.TestCase):
             "https://httpbingo.org/get",
             params={"name": "brenton", "library": "tiny-request"},
         )
-        self.assertEqual(
-            response.url, "https://httpbingo.org/get?name=brenton&library=tiny-request"
-        )
+        self.assertEqual(response.url, "https://httpbingo.org/get?name=brenton&library=tiny-request")
 
     def test_should_return_headers(self):
-        response = request(
-            "https://httpbingo.org/response-headers", params={"Test-Header": "value"}
-        )
+        response = request("https://httpbingo.org/response-headers", params={"Test-Header": "value"})
         self.assertEqual(response.headers["test-header"], "value")
 
     def test_should_populate_json(self):
@@ -231,9 +212,7 @@ class RequestTestCase(unittest.TestCase):
         self.assertEqual(response.status, 200)
 
     def test_should_form_encode_non_json_post_requests(self):
-        response = request(
-            "https://httpbingo.org/post", data={"name": "test-user"}, method="POST"
-        )
+        response = request("https://httpbingo.org/post", data={"name": "test-user"}, method="POST")
         self.assertEqual(response.json["form"]["name"], ["test-user"])
 
     def test_should_follow_redirect(self):
@@ -258,27 +237,19 @@ class RequestTestCase(unittest.TestCase):
             params={"cookie": "test"},
             redirect=False,
         )
-        response = request(
-            "https://httpbingo.org/cookies", cookiejar=response.cookiejar
-        )
+        response = request("https://httpbingo.org/cookies", cookiejar=response.cookiejar)
         self.assertEqual(response.json["cookie"], "test")
 
     def test_basic_auth(self):
-        response = request(
-            "http://httpbingo.org/basic-auth/user/passwd", basic_auth=("user", "passwd")
-        )
+        response = request("http://httpbingo.org/basic-auth/user/passwd", basic_auth=("user", "passwd"))
         self.assertEqual(response.json["authorized"], True)
 
     def test_should_handle_gzip(self):
-        response = request(
-            "http://httpbingo.org/gzip", headers={"Accept-Encoding": "gzip"}
-        )
+        response = request("http://httpbingo.org/gzip", headers={"Accept-Encoding": "gzip"})
         self.assertEqual(response.json["gzipped"], True)
 
     def test_should_handle_gzip_error(self):
-        response = request(
-            "http://httpbingo.org/status/418", headers={"Accept-Encoding": "gzip"}
-        )
+        response = request("http://httpbingo.org/status/418", headers={"Accept-Encoding": "gzip"})
         self.assertEqual(response.content, b"I'm a teapot!")
 
     def test_should_timeout(self):
