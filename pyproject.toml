@@ -10,3 +10,6 @@ line-length = 120
 
 [tool.isort]
 profile = "black"
+
+[tool.coverage.report]
+include = ["thttp.py"]

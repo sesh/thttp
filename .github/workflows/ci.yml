@@ -46,7 +46,7 @@ jobs:
     - name: Run coverage
       run: |
         coverage run -m unittest thttp.py
-        coverage report -m --fail-under=95 --include=thttp.py
+        coverage report -m --fail-under=95
         coverage json
         jq '.totals.percent_covered' coverage.json > coverage.txt
         http post https://delta-v.club/delta/c305f29f-9712-41ee-bd76-e787ca9f0acc/track value=$(cat coverage.txt) --ignore-stdin
