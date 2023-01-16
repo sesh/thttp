@@ -1,20 +1,18 @@
-# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
-
-name: CI
+name: Python Checks
 
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
 
     steps:
     - uses: actions/checkout@v3
@@ -24,32 +22,70 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
+    - name: Install test dependencies
+      run: |
+        pip install -e '.[test]'
+
     - name: Test with unittest
       run: |
         python -m unittest thttp.py
 
-  coverage:
+  black:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.11"
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
 
-    - name: Install coverage
-      run: |
-        python -m pip install coverage httpie
+      - name: Install black
+        run: |
+          python -m pip install black
 
-    - name: Run coverage
-      run: |
-        coverage run -m unittest thttp.py
-        coverage report -m --fail-under=95
-        coverage json
-        jq '.totals.percent_covered' coverage.json > coverage.txt
-        http post https://delta-v.club/delta/c305f29f-9712-41ee-bd76-e787ca9f0acc/track value=$(cat coverage.txt) --ignore-stdin
+      - name: Run black
+        run: |
+          black --check .
+
+  isort:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install isort
+        run: |
+          python -m pip install isort
+
+      - name: Run isort
+        run: |
+          isort --check .
+
+  ruff:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install ruff
+        run: |
+          python -m pip install ruff
+
+      - name: Run ruff
+        run: |
+          ruff --format=github .
 
   bandit:
     runs-on: ubuntu-latest
@@ -70,40 +106,25 @@ jobs:
         run: |
           bandit -r .
 
-  black:
+  coverage:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3
+          python-version: "3.11"
 
-      - name: Install black
+      - name: Install test dependencies
         run: |
-          python -m pip install black
+          pip install -e '.[test]'
 
-      - name: Run black
+      - name: Install coverage.py
         run: |
-          black --check .
+          pip install coverage
 
-  ruff:
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v3
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: 3
-
-    - name: Install ruff
-      run: |
-        python -m pip install ruff
-
-    - name: Run ruff
-      run: |
-        ruff --format=github .
+      - name: Test with unittest
+        run: |
+          coverage run -m unittest thttp.py
+          coverage report -m --fail-under=95
