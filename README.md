@@ -92,4 +92,4 @@ python3 -m twine upload dist/*
 ## License
 
 This code is currently released under the [UNLICENSE](UNLICENSE.md) and considered public domain.
-If more appropriate for your usage you may consider this project released under the [MIT License](LINCENSE.md).
+If more appropriate for your usage you may consider this project released under the [MIT License](LICENSE.md).
