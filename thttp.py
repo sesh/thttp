@@ -1,6 +1,6 @@
 """
-UNLICENSED
-This is free and unencumbered software released into the public domain.
+You may use this code under the UNLICENSE or MIT License.
+See README.md for details.
 
 https://github.com/sesh/thttp
 """
