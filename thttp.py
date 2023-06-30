@@ -157,6 +157,7 @@ def pretty(response, headers_only=False):
 import contextlib  # noqa: E402
 import unittest  # noqa: E402
 from io import StringIO  # noqa: E402
+from unittest.mock import patch  # noqa: E402
 
 
 class RequestTestCase(unittest.TestCase):
@@ -295,3 +296,10 @@ class RequestTestCase(unittest.TestCase):
 
         self.assertTrue("text/html; charset=utf-8" in output)
         self.assertTrue("<h1>base.html</h1>" not in output)
+
+    def test_thttp_with_mocked_response(self):
+        mocked_response = Response(None, None, {"response": "mocked"}, 200, None, None, None)
+
+        with patch("thttp.request", side_effect=[mocked_response]):
+            response = request("https://example.org")
+            self.assertEqual("mocked", response.json["response"])
