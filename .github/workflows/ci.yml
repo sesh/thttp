@@ -29,6 +29,9 @@ jobs:
     - name: Test with unittest
       run: |
         python -m unittest thttp.py
+      env:
+        MEDIAPUB_URL: ${{ secrets.MEDIAPUB_URL }}
+        MEDIAPUB_TOKEN: ${{ secrets.MEDIAPUB_TOKEN }}
 
   black:
     runs-on: ubuntu-latest
@@ -128,3 +131,6 @@ jobs:
         run: |
           coverage run -m unittest thttp.py
           coverage report -m --fail-under=95
+        env:
+          MEDIAPUB_URL: ${{ secrets.MEDIAPUB_URL }}
+          MEDIAPUB_TOKEN: ${{ secrets.MEDIAPUB_TOKEN }}

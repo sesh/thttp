@@ -7,6 +7,8 @@ https://github.com/sesh/thttp
 
 import gzip
 import json as json_lib
+import mimetypes
+import secrets
 import ssl
 from base64 import b64encode
 from collections import namedtuple
@@ -42,6 +44,7 @@ def request(
     cookiejar=None,
     basic_auth=None,
     timeout=None,
+    files={},  # note: experimental
 ):
     """
     Returns a (named)tuple with the following properties:
@@ -66,6 +69,9 @@ def request(
     if method not in ["POST", "PATCH", "PUT"] and (json or data):
         raise Exception("Request method must POST, PATCH or PUT if json or data is provided")
 
+    if files and method != "POST":
+        raise Exception("Request method must be POST when uploading files")
+
     if not timeout:
         timeout = 60
 
@@ -76,6 +82,31 @@ def request(
         data = urlencode(data).encode()
     elif isinstance(data, str):
         data = data.encode()
+    elif files:
+        boundary = secrets.token_hex()
+
+        headers["Content-Type"] = f"multipart/form-data; boundary={boundary}"
+        data = b""
+
+        for key, file in files.items():
+            file_data = file.read()  # okay, we want this to stay as a byte-string
+            if isinstance(file_data, str):
+                file_data = file_data.encode("utf-8")
+            fn = file.name
+
+            mime, _ = mimetypes.guess_type(fn)
+            if not mime:
+                print("Using default mimetype")
+                mime = "application/octet-stream"
+
+            data += b"--" + boundary.encode() + b"\r\n"
+            data += b'Content-Disposition: form-data; name="' + key.encode() + b'"; filename="' + fn.encode() + b'"\r\n'
+            data += b"Content-Type: " + mime.encode() + b"\r\n\r\n"
+            data += file_data + b"\r\n"
+            data += b"--" + boundary.encode() + b"--\r\n"
+
+        data = data
+        headers["Content-Length"] = len(data)
 
     if basic_auth and len(basic_auth) == 2 and "authorization" not in headers:
         username, password = basic_auth
@@ -155,6 +186,7 @@ def pretty(response, headers_only=False):
 
 
 import contextlib  # noqa: E402
+import os  # noqa: E402
 import unittest  # noqa: E402
 from io import StringIO  # noqa: E402
 from unittest.mock import patch  # noqa: E402
@@ -303,3 +335,22 @@ class RequestTestCase(unittest.TestCase):
         with patch("thttp.request", side_effect=[mocked_response]):
             response = request("https://example.org")
             self.assertEqual("mocked", response.json["response"])
+
+    def test_upload_single_file(self):
+        token = os.environ.get("MEDIAPUB_TOKEN")
+        url = os.environ.get("MEDIAPUB_URL")
+
+        if not token or not url:
+            self.skipTest("Skipping media upload test because environment variables are not available")
+
+        for fn in ["test-image.png", "LICENSE.md"]:
+            with open(fn, "rb" if fn.endswith("png") else "r") as f:
+                response = request(
+                    url,
+                    headers={"Authorization": f"Bearer {token}"},
+                    files={"file": f},
+                    method="POST",
+                )
+
+            self.assertEqual(response.status, 201)
+            self.assertTrue("location" in response.headers)
