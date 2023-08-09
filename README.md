@@ -18,6 +18,7 @@ It's features include:
 - Loading JSON from the response
 - Returning error responses instead of throwing exceptions from `urllib`
 - `pretty()` function for printing responses
+- Ability to upload files using the `{"file": open("file.png", "rb")}` style
 
 Future features:
 
@@ -25,7 +26,7 @@ Future features:
 - Improve handling of non-utf-8 requests
 - Improve handling of non-utf-8 responses
 
-_Note: this project is not intended to solve all use cases that can be achieved with urllib, requests or other HTTP libraries. The intent is to provide a lightweight tool that simplifies some of the most common use cases for developers._
+_Note: this project is not intended to solve all use cases that can be achieved with urllib, requests, httpx, or other HTTP libraries. The intent is to provide a lightweight tool that simplifies some of the most common use cases for developers._
 
 
 ## Installation
