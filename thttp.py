@@ -202,7 +202,7 @@ class RequestTestCase(unittest.TestCase):
     def test_should_return_response_for_404(self):
         response = request("https://httpbingo.org/404")
         self.assertEqual(response.status, 404)
-        self.assertTrue("text/plain" in response.headers["content-type"])
+        self.assertTrue("application/json" in response.headers["content-type"])
 
     def test_should_fail_with_bad_ssl(self):
         with self.assertRaises(URLError):
