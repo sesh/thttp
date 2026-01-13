@@ -63,21 +63,16 @@ response.status
 
 ## Running the tests
 
-```sh
-> python3 -m unittest thttp.py
+Use `uvx` to run tests with coverage and a specific Python version:
+
+```
+uvx --python=3.14 coverage run -m unittest thttp.py
 ```
 
 And to check the coverage:
 
-```sh
-> coverage run -m unittest thttp.py
-> coverage html && open htmlcov/index.html
 ```
-
-Run `black` before committing any changes.
-
-```sh
-> black thttp.py
+uvx coverage html && open htmlcov/index.html
 ```
 
 

@@ -156,6 +156,7 @@ def request(
             if "application/json" in headers.get("content-type", "").lower() and content
             else None
         )
+        e.close()
 
     return Response(req, content, json, status, resp_url, headers, cookiejar)
 
