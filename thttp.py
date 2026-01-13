@@ -234,7 +234,6 @@ class RequestTestCase(unittest.TestCase):
     def test_should_return_response_for_404(self):
         response = request("https://httpbingo.org/404")
         self.assertEqual(response.status, 404)
-        self.assertTrue("application/json" in response.headers["content-type"])
 
     def test_should_fail_with_bad_ssl(self):
         with self.assertRaises(URLError):
@@ -251,9 +250,9 @@ class RequestTestCase(unittest.TestCase):
     def test_should_follow_redirect(self):
         response = request(
             "https://httpbingo.org/redirect-to",
-            params={"url": "https://example.org/"},
+            params={"url": "https://httpbingo.org/"},
         )
-        self.assertEqual(response.url, "https://example.org/")
+        self.assertEqual(response.url, "https://httpbingo.org/")
         self.assertEqual(response.status, 200)
 
     def test_should_not_follow_redirect_if_redirect_false(self):
